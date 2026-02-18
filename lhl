@@ -1,0 +1,526 @@
+local isFirstRun = (function()
+    if game:GetService('CoreGui'):FindFirstChild('KJY_Team_AntiDup') then
+        game:GetService('Players').LocalPlayer:Kick('Script already running! Please wait.')
+        return false
+    end
+
+    local _ScreenGui = Instance.new('ScreenGui')
+    _ScreenGui.Name = 'KJY_Team_AntiDup'
+    _ScreenGui.Parent = game:GetService('CoreGui')
+
+    game:GetService('Players').PlayerRemoving:Connect(function(p2)
+        if p2 == game:GetService('Players').LocalPlayer then
+            _ScreenGui:Destroy()
+        end
+    end)
+
+    return true
+end)()
+
+if not isFirstRun then
+    return
+end
+
+-- 提前声明所有变量，避免报错
+local u154 = false
+local u155 = 25
+local u156 = false
+local u158 = 0
+local u159 = 1
+
+local u169 = {}
+local u170 = 6
+
+local _LocalPlayer = game:GetService('Players').LocalPlayer
+
+-- 防挂机
+local function setupAntiAFK()
+    local ok, err = pcall(function()
+        if _LocalPlayer and _LocalPlayer.Idled then
+            _LocalPlayer.Idled:Connect(function()
+                local VirtualUser = game:GetService('VirtualUser')
+                VirtualUser:Button2Down(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
+                task.wait(0.5)
+                VirtualUser:Button2Up(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
+            end)
+        end
+    end)
+    if ok then
+        print('Anti-AFK active')
+    else
+        warn('Anti-AFK failed: '..tostring(err))
+    end
+end
+setupAntiAFK()
+
+-- 创建主界面 GUI
+local ScreenGui = Instance.new('ScreenGui')
+ScreenGui.Name = 'MobileWindUI'
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+ScreenGui.Parent = _LocalPlayer:WaitForChild('PlayerGui')
+
+local ViewportSize = workspace.CurrentCamera.ViewportSize
+
+-- 主窗口
+local MainWindow = Instance.new('Frame')
+MainWindow.Name = 'MainWindow'
+MainWindow.Size = UDim2.new(0, 300, 0, 350)
+MainWindow.Position = UDim2.new(0, 20, 0, 50)
+MainWindow.BackgroundColor3 = Color3.fromRGB(240, 240, 240)
+MainWindow.BorderSizePixel = 1
+MainWindow.BorderColor3 = Color3.fromRGB(100, 100, 100)
+MainWindow.ZIndex = 10
+MainWindow.Parent = ScreenGui
+
+local UICorner = Instance.new('UICorner')
+UICorner.CornerRadius = UDim.new(0, 8)
+UICorner.Parent = MainWindow
+
+-- 标题栏
+local TitleBar = Instance.new('TextButton')
+TitleBar.Name = 'TitleBar'
+TitleBar.Size = UDim2.new(1, 0, 0, 30)
+TitleBar.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+TitleBar.Text = ''
+TitleBar.AutoButtonColor = false
+TitleBar.ZIndex = 11
+TitleBar.Parent = MainWindow
+
+local TitleLabel = Instance.new('TextLabel')
+TitleLabel.Size = UDim2.new(0.6, 0, 1, 0)
+TitleLabel.Position = UDim2.new(0, 5, 0, 0)
+TitleLabel.BackgroundTransparency = 1
+TitleLabel.Text = '刘亦怀failing'
+TitleLabel.TextColor3 = Color3.new(1,1,1)
+TitleLabel.TextSize = 14
+TitleLabel.Font = Enum.Font.GothamBold
+TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+TitleLabel.ZIndex = 12
+TitleLabel.Parent = TitleBar
+
+local StrengthLabel = Instance.new('TextLabel')
+StrengthLabel.Size = UDim2.new(0.4, 0, 1, 0)
+StrengthLabel.Position = UDim2.new(0.6, -5, 0, 0)
+StrengthLabel.BackgroundTransparency = 1
+StrengthLabel.Text = '0'
+StrengthLabel.TextColor3 = Color3.new(1,1,1)
+StrengthLabel.TextSize = 12
+StrengthLabel.Font = Enum.Font.GothamBold
+StrengthLabel.TextXAlignment = Enum.TextXAlignment.Right
+StrengthLabel.ZIndex = 12
+StrengthLabel.Parent = TitleBar
+
+-- 最小化按钮
+local MinimizeBtn = Instance.new('TextButton')
+MinimizeBtn.Name = 'MinimizeButton'
+MinimizeBtn.Size = UDim2.new(0, 24, 0, 24)
+MinimizeBtn.Position = UDim2.new(1, -60, 0.5, 0)
+MinimizeBtn.AnchorPoint = Vector2.new(0.5, 0.5)
+MinimizeBtn.BackgroundColor3 = Color3.fromRGB(120, 120, 120)
+MinimizeBtn.Text = '-'
+MinimizeBtn.TextColor3 = Color3.new(1,1,1)
+MinimizeBtn.TextSize = 16
+MinimizeBtn.Font = Enum.Font.GothamBold
+MinimizeBtn.AutoButtonColor = false
+MinimizeBtn.ZIndex = 12
+MinimizeBtn.Parent = TitleBar
+
+-- 关闭按钮
+local CloseBtn = Instance.new('TextButton')
+CloseBtn.Name = 'CloseButton'
+CloseBtn.Size = UDim2.new(0, 24, 0, 24)
+CloseBtn.Position = UDim2.new(1, -30, 0.5, 0)
+CloseBtn.AnchorPoint = Vector2.new(0.5, 0.5)
+CloseBtn.BackgroundColor3 = Color3.fromRGB(120, 120, 120)
+CloseBtn.Text = 'X'
+CloseBtn.TextColor3 = Color3.new(1,1,1)
+CloseBtn.TextSize = 14
+CloseBtn.Font = Enum.Font.GothamBold
+CloseBtn.AutoButtonColor = false
+CloseBtn.ZIndex = 12
+CloseBtn.Parent = TitleBar
+
+local BtnCorner = Instance.new('UICorner')
+BtnCorner.CornerRadius = UDim.new(0, 4)
+BtnCorner.Parent = MinimizeBtn
+local BtnCorner2 = BtnCorner:Clone()
+BtnCorner2.Parent = CloseBtn
+
+-- 统计面板
+local StatsFrame = Instance.new('Frame')
+StatsFrame.Name = 'StatsFrame'
+StatsFrame.Size = UDim2.new(1, -20, 0, 50)
+StatsFrame.Position = UDim2.new(0, 10, 0, 35)
+StatsFrame.BackgroundColor3 = Color3.fromRGB(220, 220, 220)
+StatsFrame.BorderSizePixel = 0
+StatsFrame.ZIndex = 11
+StatsFrame.Parent = MainWindow
+
+local StatsCorner = Instance.new('UICorner')
+StatsCorner.CornerRadius = UDim.new(0, 6)
+StatsCorner.Parent = StatsFrame
+
+local SpeedLabelName = Instance.new('TextLabel')
+SpeedLabelName.Size = UDim2.new(0.5, -5, 0.5, 0)
+SpeedLabelName.Position = UDim2.new(0, 5, 0, 2)
+SpeedLabelName.BackgroundTransparency = 1
+SpeedLabelName.Text = 'Speed:'
+SpeedLabelName.TextColor3 = Color3.fromRGB(50, 50, 50)
+SpeedLabelName.TextSize = 11
+SpeedLabelName.Font = Enum.Font.Gotham
+SpeedLabelName.TextXAlignment = Enum.TextXAlignment.Left
+SpeedLabelName.ZIndex = 12
+SpeedLabelName.Parent = StatsFrame
+
+local SpeedValue = Instance.new('TextLabel')
+SpeedValue.Name = 'SpeedValue'
+SpeedValue.Size = UDim2.new(0.5, -5, 0.5, 0)
+SpeedValue.Position = UDim2.new(0.5, 0, 0, 2)
+SpeedValue.BackgroundTransparency = 1
+SpeedValue.Text = '0/s'
+SpeedValue.TextColor3 = Color3.fromRGB(0, 120, 0)
+SpeedValue.TextSize = 11
+SpeedValue.Font = Enum.Font.GothamBold
+SpeedValue.TextXAlignment = Enum.TextXAlignment.Right
+SpeedValue.ZIndex = 12
+SpeedValue.Parent = StatsFrame
+
+local DailyLabelName = Instance.new('TextLabel')
+DailyLabelName.Size = UDim2.new(0.5, -5, 0.5, 0)
+DailyLabelName.Position = UDim2.new(0, 5, 0.5, 2)
+DailyLabelName.BackgroundTransparency = 1
+DailyLabelName.Text = 'Daily:'
+DailyLabelName.TextColor3 = Color3.fromRGB(50, 50, 50)
+DailyLabelName.TextSize = 11
+DailyLabelName.Font = Enum.Font.Gotham
+DailyLabelName.TextXAlignment = Enum.TextXAlignment.Left
+DailyLabelName.ZIndex = 12
+DailyLabelName.Parent = StatsFrame
+
+local DailyValue = Instance.new('TextLabel')
+DailyValue.Name = 'DailyValue'
+DailyValue.Size = UDim2.new(0.5, -5, 0.5, 0)
+DailyValue.Position = UDim2.new(0.5, 0, 0.5, 2)
+DailyValue.BackgroundTransparency = 1
+DailyValue.Text = '0'
+DailyValue.TextColor3 = Color3.fromRGB(180, 100, 0)
+DailyValue.TextSize = 11
+DailyValue.Font = Enum.Font.GothamBold
+DailyValue.TextXAlignment = Enum.TextXAlignment.Right
+DailyValue.ZIndex = 12
+DailyValue.Parent = StatsFrame
+
+-- 按钮面板
+local ButtonsFrame = Instance.new('Frame')
+ButtonsFrame.Name = 'ButtonsFrame'
+ButtonsFrame.Size = UDim2.new(1, -20, 0, 240)
+ButtonsFrame.Position = UDim2.new(0, 10, 0, 90)
+ButtonsFrame.BackgroundTransparency = 1
+ButtonsFrame.ZIndex = 11
+ButtonsFrame.Parent = MainWindow
+
+local ScrollingFrame = Instance.new('ScrollingFrame')
+ScrollingFrame.Name = 'ButtonContainer'
+ScrollingFrame.Size = UDim2.new(1, 0, 1, 0)
+ScrollingFrame.BackgroundTransparency = 1
+ScrollingFrame.ScrollBarThickness = 4
+ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
+ScrollingFrame.ZIndex = 12
+ScrollingFrame.Parent = ButtonsFrame
+
+local UIListLayout = Instance.new('UIListLayout')
+UIListLayout.Padding = UDim.new(0, 5)
+UIListLayout.Parent = ScrollingFrame
+
+-- 拖动功能
+local dragging = false
+local dragStart, dragPos
+
+local function startDrag(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        dragPos = Vector2.new(MainWindow.Position.X.Offset, MainWindow.Position.Y.Offset)
+    end
+end
+
+local function endDrag(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = false
+    end
+end
+
+local function updateDrag(input)
+    if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        local delta = input.Position - dragStart
+        MainWindow.Position = UDim2.new(0, dragPos.X + delta.X, 0, dragPos.Y + delta.Y)
+    end
+end
+
+TitleBar.InputBegan:Connect(startDrag)
+TitleBar.InputEnded:Connect(endDrag)
+game:GetService('UserInputService').InputChanged:Connect(updateDrag)
+game:GetService('UserInputService').InputEnded:Connect(endDrag)
+
+-- 最小化
+local minimized = false
+local fullSize = MainWindow.Size
+
+MinimizeBtn.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        minimized = not minimized
+        if minimized then
+            MainWindow.Size = UDim2.new(0, MainWindow.Size.X.Offset, 0, 30)
+            StatsFrame.Visible = false
+            ButtonsFrame.Visible = false
+            MinimizeBtn.Text = '+'
+        else
+            MainWindow.Size = fullSize
+            StatsFrame.Visible = true
+            ButtonsFrame.Visible = true
+            MinimizeBtn.Text = '-'
+        end
+    end
+end)
+
+-- 关闭
+CloseBtn.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        ScreenGui:Destroy()
+        local anti = game:GetService('CoreGui'):FindFirstChild('KJY_Team_AntiDup')
+        if anti then anti:Destroy() end
+    end
+end)
+
+local btnStates = {}
+
+-- 按钮创建
+local function createToggleButton(name, callback)
+    local btn = Instance.new('TextButton')
+    btn.Name = name..'Button'
+    btn.Size = UDim2.new(1, 0, 0, 35)
+    btn.BackgroundColor3 = Color3.fromRGB(200, 200, 200)
+    btn.Text = name
+    btn.TextColor3 = Color3.new(0,0,0)
+    btn.TextSize = 12
+    btn.Font = Enum.Font.Gotham
+    btn.AutoButtonColor = false
+    btn.ZIndex = 13
+    btn.Parent = ScrollingFrame
+
+    local corner = Instance.new('UICorner')
+    corner.CornerRadius = UDim.new(0, 6)
+    corner.Parent = btn
+
+    local active = false
+
+    local function updateStyle()
+        if active then
+            btn.BackgroundColor3 = Color3.fromRGB(100, 200, 100)
+        else
+            btn.BackgroundColor3 = Color3.fromRGB(200, 200, 200)
+        end
+    end
+    updateStyle()
+
+    btn.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            active = not active
+            updateStyle()
+            pcall(callback, active)
+            btnStates[name] = active
+        end
+    end)
+
+    btnStates[name] = active
+    return btn
+end
+
+-- 功能函数
+local function u163(n)
+    if n < 1000 then return string.format('%.0f', n) end
+    local e = math.floor(math.log(n)/math.log(1000))
+    local v = n / (1000^e)
+    local suffix = {'K','M','B','T','Qa','Qi'}[e] or ''
+    return string.format('%.2f%s', v, suffix)
+end
+
+local function u176()
+    if #u169 == 0 then return 0 end
+    local sum = 0
+    for _,x in ipairs(u169) do sum = sum + x end
+    return sum / #u169
+end
+
+local function u165()
+    while u154 do
+        pcall(function()
+            local evt = _LocalPlayer:FindFirstChild('muscleEvent')
+            if evt then
+                for i = 1, u155 do
+                    evt:FireServer('rep')
+                end
+            end
+        end)
+        task.wait(0.02)
+    end
+end
+
+local function u168()
+    local ok = pcall(function()
+        local f = _LocalPlayer:FindFirstChild('boostTimersFolder')
+        return f and f:FindFirstChild('Protein Egg')
+    end)
+    return ok
+end
+
+local function u180()
+    while u156 do
+        task.wait(1)
+        pcall(function()
+            if u168() then return end
+            local egg = _LocalPlayer.Backpack:FindFirstChild('Protein Egg')
+            local char = _LocalPlayer.Character
+            if not egg or not char then return end
+            local hum = char:FindFirstChild('Humanoid')
+            if not hum then return end
+
+            hum:EquipTool(egg)
+            task.wait(0.2)
+            local egg2 = char:FindFirstChild('Protein Egg')
+            local evt = _LocalPlayer:FindFirstChild('muscleEvent')
+            if egg2 and evt then
+                evt:FireServer('proteinEgg', egg2)
+            end
+            hum:UnequipTools()
+        end)
+    end
+end
+
+local function u206()
+    local keywords = {'+','Coin','Strength','Exp','Experience','Level','Health'}
+    local protects = {'MobileWindUI','Crazy Top','Rayfield','KJY_Team_AntiDup'}
+
+    local function clean(parent)
+        pcall(function()
+            for _,gui in ipairs(parent:GetChildren()) do
+                if gui:IsA('ScreenGui') then
+                    local keep = false
+                    for _,n in ipairs(protects) do
+                        if gui.Name:find(n) then
+                            keep = true
+                            break
+                        end
+                    end
+                    if not keep then
+                        for _,d in ipairs(gui:GetDescendants()) do
+                            if (d:IsA('TextLabel') or d:IsA('TextButton')) and d.Text then
+                                for _,k in ipairs(keywords) do
+                                    if d.Text:find(k) then
+                                        gui:Destroy()
+                                        break
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end)
+    end
+
+    clean(game:GetService('CoreGui'))
+    if _LocalPlayer.PlayerGui then
+        clean(_LocalPlayer.PlayerGui)
+    end
+end
+
+-- 功能按钮
+createToggleButton('快速锻炼', function(state)
+    u154 = state
+    if state then
+        task.spawn(u165)
+    end
+end)
+
+createToggleButton('自动吃蛋', function(state)
+    u156 = state
+    if state then
+        task.spawn(u180)
+    end
+end)
+
+-- 清理按钮
+local cleanBtn = Instance.new('TextButton')
+cleanBtn.Name = 'CleanUIButton'
+cleanBtn.Size = UDim2.new(1, 0, 0, 35)
+cleanBtn.BackgroundColor3 = Color3.fromRGB(200, 200, 200)
+cleanBtn.Text = '防卡顿'
+cleanBtn.TextColor3 = Color3.new(0,0,0)
+cleanBtn.TextSize = 12
+cleanBtn.Font = Enum.Font.Gotham
+cleanBtn.AutoButtonColor = false
+cleanBtn.ZIndex = 13
+cleanBtn.Parent = ScrollingFrame
+
+local ccorner = Instance.new('UICorner')
+ccorner.CornerRadius = UDim.new(0,6)
+ccorner.Parent = cleanBtn
+
+cleanBtn.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        cleanBtn.BackgroundColor3 = Color3.fromRGB(170,170,170)
+    end
+end)
+
+cleanBtn.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        cleanBtn.BackgroundColor3 = Color3.fromRGB(200,200,200)
+        u206()
+    end
+end)
+
+-- 自动滚动高度
+local function updateCanvas()
+    local content = UIListLayout.AbsoluteContentSize.Y
+    ScrollingFrame.CanvasSize = UDim2.new(0,0,0, content)
+end
+
+UIListLayout:GetPropertyChangedSignal('AbsoluteContentSize'):Connect(updateCanvas)
+task.defer(updateCanvas)
+
+-- 统计更新
+local function startStatsUpdate()
+    local lastTime = tick()
+    while ScreenGui and ScreenGui.Parent do
+        task.wait(u159)
+        pcall(function()
+            local ls = _LocalPlayer:FindFirstChild('leaderstats')
+            local str = ls and ls:FindFirstChild('Strength')
+            if not str then return end
+            local val = str.Value
+            local now = tick()
+
+            StrengthLabel.Text = 'Now '..u163(val)
+
+            if u158 > 0 then
+                local dt = now - lastTime
+                local gain = val - u158
+                local spd = gain / math.max(0.1, dt)
+                table.insert(u169, spd)
+                while #u169 > u170 do
+                    table.remove(u169,1)
+                end
+                local avg = u176()
+                SpeedValue.Text = string.format('%.1f/s', spd)
+                DailyValue.Text = u163(avg * 86400)
+            end
+
+            u158 = val
+            lastTime = now
+        end)
+    end
+end
+task.spawn(startStatsUpdate)
+
+print('Script loaded successfully!')
