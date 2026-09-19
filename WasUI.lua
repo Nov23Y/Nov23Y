@@ -63,8 +63,8 @@ local function copyToClipboard(text)
 end
 
 WasUI.DefaultDisplayOrder = 10
-WasUI.DialogTitle = "你要关闭WasUI吗?"
-WasUI.Version = "1.1.7"
+WasUI.DialogTitle = "你要关闭Wasui吗?"
+WasUI.Version = ""
 WasUI.NotificationTop = 20
 WasUI.NotificationSpacing = 8
 WasUI.NotificationHeight = 30
@@ -4981,7 +4981,7 @@ function Panel:New(name, parent, size, position, backgroundUrl, snowEnabled, tit
             Parent = dialogFrame,
             ZIndex = 10002
         })
-        versionLabel.Text = WasUI:Translate("INsting") .. WasUI.Version
+        versionLabel.Text = WasUI:Translate("霸王龙") .. WasUI.Version
         local buttonContainer = CreateInstance("Frame", {
             Name = "ButtonContainer",
             Size = UDim2.new(1, -20, 0, 50),
@@ -5301,7 +5301,7 @@ function Panel:New(name, parent, size, position, backgroundUrl, snowEnabled, tit
         ZIndex = 2,
         Parent = self.AnnouncementBar
     })
-    WasUI:SetLocalizedText(self.WelcomeLabel, "欢迎使用 INsting")
+    WasUI:SetLocalizedText(self.WelcomeLabel, "欢迎使用 霸王龙")
     table.insert(WasUI.Objects, {Object = self.WelcomeLabel, Type = "Label"})
     self.SettingsHint = CreateInstance("TextLabel", {
         Name = "SettingsHint",
