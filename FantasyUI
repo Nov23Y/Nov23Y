@@ -1,13 +1,5 @@
---[[
-    FantasyUI · Wind Style API Edition
-    - 保留 Fantasy 的灵动岛 + 展开面板 + 卡密系统 + 通知 + 弹窗
-    - 控件 API 完全仿 WindUI：
-        Window:Tab({Title, Icon})
-        Tab:Section({Title, Box, Opened})
-        Section:Button / Toggle / Slider / Input / Dropdown / Paragraph / Keybind / Divider
-    - 支持 Flag + CreateConfig 保存/加载配置
-    By iyoulin
-]]
+--这是一个开源免费的Roblox UI
+--By IYOULIN
 
 local TweenService     = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -19,13 +11,10 @@ local playerGui = player:WaitForChild("PlayerGui")
 
 local FantasyUI = {}
 FantasyUI.__index = FantasyUI
-FantasyUI.Version = "2.0.0"
+FantasyUI.Version = "1.0.0"
 
 local DEFAULT_KEY_FILE = "fantasy_key.txt"
 
---==========================================================
--- 图标
---==========================================================
 local ICON_MAP = {
     ["layout-grid"]="▦", ["keyboard"]="⌨", ["toggle-right"]="◉", ["toggle-left"]="◐",
     ["settings"]="⚙", ["mouse-pointer-click"]="☝", ["mouse-pointer"]="➤", ["pointer"]="➤",
@@ -77,9 +66,6 @@ local function createIcon(parent, name, size, color)
     return holder
 end
 
---==========================================================
--- 卡密界面（沿用 Fantasy 原版风格）
---==========================================================
 local function buildKeyUI(keySystem, keyFile, saveKey, onSuccess)
     local validKeys = {}
     for _, k in ipairs(keySystem.Key or {}) do validKeys[k]=true end
@@ -290,9 +276,6 @@ local function checkSavedKey(keySystem, keyFile)
     return false
 end
 
---==========================================================
--- 默认配置
---==========================================================
 local DEFAULTS = {
     TopOffset = 12, IslandName = "Fantasy",
     IslandWidth = 180, IslandHeight = 46, IslandRadius = 23,
@@ -340,13 +323,9 @@ local DEFAULTS = {
     },
 }
 
---==========================================================
--- CreateWindow
---==========================================================
 function FantasyUI:CreateWindow(config)
     config = config or {}
 
-    -- 卡密
     local keySystem = config.KeySystem
     if keySystem and keySystem.Key and #keySystem.Key > 0 then
         local keyFile = config.KeyFile or DEFAULT_KEY_FILE
@@ -417,7 +396,6 @@ function FantasyUI:CreateWindow(config)
     gui.DisplayOrder = 999
     gui.Parent = playerGui
 
-    -- ============ 灵动岛 ============
     local islandOffsetX = -(CONFIG.BallSize + CONFIG.BallGap)/2
     local island = Instance.new("Frame")
     island.Name = "Island"
@@ -528,7 +506,6 @@ function FantasyUI:CreateWindow(config)
     islandBtn.AutoButtonColor = false
     islandBtn.ZIndex = 12
 
-    -- 关闭球
     local ballX = islandOffsetX + CONFIG.IslandWidth/2 + CONFIG.BallGap + CONFIG.BallSize/2
     local ballY = CONFIG.TopOffset + (CONFIG.IslandHeight - CONFIG.BallSize)/2
     local ball = Instance.new("TextButton")
@@ -591,7 +568,6 @@ function FantasyUI:CreateWindow(config)
         end
     end)
 
-    -- ============ 面板 ============
     local panelFrame = Instance.new("Frame")
     panelFrame.Name = "Panel"
     panelFrame.AnchorPoint = Vector2.new(0.5,0)
@@ -610,7 +586,6 @@ function FantasyUI:CreateWindow(config)
     panelStroke.Transparency = CONFIG.PanelStrokeTransparency
     panelStroke.Thickness = 1
 
-    -- 边缘流光
     if CONFIG.EdgeGlowEnabled then
         local thickness = CONFIG.EdgeGlowThickness
         local glowColor = CONFIG.EdgeGlowColor
@@ -677,7 +652,6 @@ function FantasyUI:CreateWindow(config)
     panelContent.BackgroundTransparency = 1
     panelContent.ZIndex = 6
 
-    -- ============ 侧边栏 ============
     local sideBar = Instance.new("Frame",panelContent)
     sideBar.BackgroundColor3 = CONFIG.Color.SideBarBg
     sideBar.BackgroundTransparency = CONFIG.Color.SideBarBgAlpha
@@ -692,7 +666,6 @@ function FantasyUI:CreateWindow(config)
     sbPad.PaddingLeft = UDim.new(0,6)
     sbPad.PaddingRight = UDim.new(0,6)
 
-    -- 搜索框
     local searchBar = Instance.new("TextButton",sideBar)
     searchBar.Size = UDim2.new(1,0,0,24)
     searchBar.BackgroundColor3 = CONFIG.Color.SearchBg
@@ -717,7 +690,6 @@ function FantasyUI:CreateWindow(config)
     searchBox.ClearTextOnFocus = false
     searchBox.ZIndex = 10
 
-    -- 用户信息
     local userRow = Instance.new("Frame",sideBar)
     userRow.Position = UDim2.new(0,0,0,32)
     userRow.Size = UDim2.new(1,0,0,32)
@@ -757,13 +729,12 @@ function FantasyUI:CreateWindow(config)
     userVersion.Size = UDim2.new(1,-34,0,12)
     userVersion.BackgroundTransparency = 1
     userVersion.Font = Enum.Font.Gotham
-    userVersion.Text = "Fantasy · Wind Style "..FantasyUI.Version
+    userVersion.Text = "FantasyUI"..FantasyUI.Version
     userVersion.TextColor3 = CONFIG.Color.SubText
     userVersion.TextSize = 8
     userVersion.TextXAlignment = Enum.TextXAlignment.Left
     userVersion.ZIndex = 9
 
-    -- Tab 容器
     local tabContainer = Instance.new("Frame",sideBar)
     tabContainer.Position = UDim2.new(0,0,0,70)
     tabContainer.Size = UDim2.new(1,0,1,-70)
@@ -774,7 +745,6 @@ function FantasyUI:CreateWindow(config)
     tabLayout.SortOrder = Enum.SortOrder.LayoutOrder
     tabLayout.Padding = UDim.new(0,2)
 
-    -- 内容区
     local contentArea = Instance.new("Frame",panelContent)
     contentArea.Position = UDim2.new(0,CONFIG.SideBarWidth+14,0,6)
     contentArea.Size = UDim2.new(1,-(CONFIG.SideBarWidth+20),1,-12)
@@ -782,7 +752,6 @@ function FantasyUI:CreateWindow(config)
     contentArea.ClipsDescendants = true
     contentArea.ZIndex = 7
 
-    -- ============ Tab 管理 ============
     local tabs = {}
     local activeTabIndex = nil
     local windowAllElements = {}
@@ -836,7 +805,6 @@ function FantasyUI:CreateWindow(config)
         applySearch(searchBox.Text)
     end)
 
-    -- ============ 卡片创建工具 ============
     local function createCard(parent, order, height, searchKey)
         local card = Instance.new("Frame")
         card.Name = "Card"
@@ -873,9 +841,6 @@ function FantasyUI:CreateWindow(config)
         return l
     end
 
-    --=========================================================
-    -- 元素创建器
-    --=========================================================
     local function createCardButton(parent, order, opts, onFlag)
         local hasDesc = opts.Desc and opts.Desc ~= ""
         local h = hasDesc and 52 or 40
@@ -1512,7 +1477,6 @@ function FantasyUI:CreateWindow(config)
         return d
     end
 
-    -- ============ 通知 / 弹窗 ============
     local function showToast(text)
         toastToken = nil
         local myToken = {}
@@ -1528,7 +1492,6 @@ function FantasyUI:CreateWindow(config)
         end)
     end
 
-    -- 弹窗（通用）
     local modalMask = Instance.new("TextButton",gui)
     modalMask.Size = UDim2.fromScale(1,1)
     modalMask.BackgroundColor3 = Color3.fromRGB(0,0,0)
@@ -1632,8 +1595,6 @@ function FantasyUI:CreateWindow(config)
         modalContent.Text = opts.Content or ""
         if opts.Icon then
             modalIcon.Visible = true
-            local inner = modalIcon:FindFirstChild("IconHolder")
-            -- 简单处理：直接替换
             local old = modalIcon
             modalIcon = createIcon(modalFrame, opts.Icon, 20, CONFIG.Color.Accent)
             modalIcon.Position = UDim2.new(0,18,0,18)
@@ -1677,7 +1638,6 @@ function FantasyUI:CreateWindow(config)
         end)
     end
 
-    -- 面板开合
     local function applyPanelPos(x,y)
         panelFrame.Position = UDim2.fromOffset(math.round(x), math.round(y))
     end
@@ -1731,7 +1691,7 @@ function FantasyUI:CreateWindow(config)
     ball.MouseButton1Click:Connect(function()
         showModal({
             Title = "关闭窗口",
-            Content = "确定要关闭 UI 吗？",
+            Content = "确定要关闭 FantasyUI 吗？",
             Icon = "triangle-alert",
             Buttons = {
                 { Title = "取消", Variant = "Cancel", Callback = nil },
@@ -1744,7 +1704,6 @@ function FantasyUI:CreateWindow(config)
         if isPanelOpen then closePanel() else openPanel() end
     end)
 
-    -- 拖拽
     UserInputService.InputChanged:Connect(function(input)
         if not dragging then return end
         if not isPanelOpen then dragging = false return end
@@ -1813,7 +1772,6 @@ function FantasyUI:CreateWindow(config)
         applyPanelPos(panelX, panelY)
     end
 
-    -- K 键召回
     UserInputService.InputBegan:Connect(function(input, gp)
         if gp then return end
         if input.KeyCode == Enum.KeyCode.K and not gui.Enabled then
@@ -1839,9 +1797,6 @@ function FantasyUI:CreateWindow(config)
         end
     end)
 
-    --==========================================================
-    -- Window 对象
-    --==========================================================
     local window = {}
     window.__index = window
     window.AllElements = windowAllElements
@@ -1934,16 +1889,6 @@ function FantasyUI:CreateWindow(config)
         tabObj.__index = tabObj
         tabObj.Elements = {}
 
-        -- 工具：生成 section 元素
-        local function makeSectionElement(parent, creator, opts)
-            local order = nextTabOrder()
-            local card, element = creator(parent, order, opts, registerFlag)
-            if opts.Flag and element then
-                table.insert(tabObj.Elements, element)
-            end
-            return element
-        end
-
         function tabObj:Section(opts)
             if type(opts) == "string" then opts = { Title = opts } end
             opts = opts or {}
@@ -1976,7 +1921,6 @@ function FantasyUI:CreateWindow(config)
                 pad.PaddingRight = UDim.new(0,8)
             end
 
-            -- header
             local header = Instance.new("TextButton",holder)
             header.Size = UDim2.new(1,0,0,24)
             header.BackgroundTransparency = 1
@@ -2002,7 +1946,6 @@ function FantasyUI:CreateWindow(config)
             titleLbl.Size = UDim2.new(1,-30,1,0)
             titleLbl.ZIndex = 9
 
-            -- body
             local body = Instance.new("Frame",holder)
             body.Name = "Body"
             body.Size = UDim2.new(1,0,0,0)
@@ -2032,7 +1975,6 @@ function FantasyUI:CreateWindow(config)
                 TweenService:Create(chev,TweenInfo.new(0.2),{Rotation = opened and 180 or 0}):Play()
             end)
 
-            -- 元素方法
             function section:Button(o)
                 o = o or {}
                 local card, element = createCardButton(body, nextSecOrder(), o, registerFlag)
@@ -2110,7 +2052,6 @@ function FantasyUI:CreateWindow(config)
     function window:Destroy() gui:Destroy() end
     function window:SetVisible(v) gui.Enabled = v and true or false end
 
-    -- 配置系统
     function window:CreateConfig(name)
         local cfg = {
             Name = name or "default",
