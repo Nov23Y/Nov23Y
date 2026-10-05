@@ -8,7 +8,7 @@ local playerGui = player:WaitForChild("PlayerGui")
 
 local FantasyUI = {}
 FantasyUI.__index = FantasyUI
-FantasyUI.Version = "1.0"
+FantasyUI.Version = "2.1.0"
 
 local DEFAULT_KEY_FILE = "fantasy_key.txt"
 
@@ -552,8 +552,8 @@ local DEFAULTS = {
     IslandWidth = 180, IslandHeight = 46, IslandRadius = 23,
     IslandTransparency = 0.1, IslandStrokeTransparency = 0.7,
     IslandGap = 8, BallSize = 40, BallGap = 8,
-    ExpandedWidth = 520, ExpandedHeight = 340, ExpandedRadius = 14,
-    SideBarWidth = 132,
+    ExpandedWidth = 520, ExpandedHeight = 400, ExpandedRadius = 14,
+    SideBarWidth = 120,
     PanelTransparency = 0.42, PanelStrokeTransparency = 0.85,
     ExpandTime = 0.4, CollapseTime = 0.28,
     DragThreshold = 6, EdgePadding = 10, ToastDuration = 2.5,
@@ -1317,9 +1317,18 @@ function FantasyUI:CreateWindow(config)
             d.Size = UDim2.new(1,-tx-24,0,12)
         end
 
-        local min, max = opts.Min or 0, opts.Max or 100
-        local rounding = opts.Rounding or 0
-        local state = opts.Default or min
+        local min, max, rounding, state
+        local Value = opts.Value
+        if type(Value) == "table" then
+            min = Value.Min or 0
+            max = Value.Max or 100
+            state = Value.Default or min
+        else
+            min = opts.Min or 0
+            max = opts.Max or 100
+            state = opts.Default or opts.Value or min
+        end
+        rounding = opts.Rounding or 0
 
         local barBg = Instance.new("Frame",card)
         barBg.Position = UDim2.new(0,12,1,-18)
@@ -1432,7 +1441,7 @@ function FantasyUI:CreateWindow(config)
         inputBox.Size = UDim2.new(1,-16,1,-8)
         inputBox.BackgroundTransparency = 1
         inputBox.Font = Enum.Font.Gotham
-        inputBox.PlaceholderText = opts.Placeholder or "输入…"
+        inputBox.PlaceholderText = opts.Placeholder or opts.PlaceholderText or "输入…"
         inputBox.PlaceholderColor3 = CONFIG.Color.SubText
         inputBox.Text = opts.Value or ""
         inputBox.TextColor3 = CONFIG.Color.Text
@@ -1641,6 +1650,13 @@ function FantasyUI:CreateWindow(config)
                     btnLabel.Text = tostring(v)
                 end
             end,
+            Refresh = function(newValues)
+                if type(newValues) ~= "table" then return end
+                table.clear(values)
+                for _, v in ipairs(newValues) do
+                    table.insert(values, v)
+                end
+            end,
         }
         if opts.Flag and onFlag then onFlag(opts.Flag, element) end
         return card, element
@@ -1703,7 +1719,7 @@ function FantasyUI:CreateWindow(config)
             d.Text = text
             local lines = 1
             for _ in text:gmatch("\n") do lines = lines + 1 end
-            local dh = math.max(24, lines * 13)
+            local dh = math.max(20, lines * 13)
             d.Size = UDim2.new(1,-tx-12,0,dh)
             local baseH = hasBtn and 40 or 26
             card.Size = UDim2.new(1,0,0,baseH + dh)
@@ -2269,8 +2285,9 @@ function FantasyUI:CreateWindow(config)
             if type(opts) == "string" then opts = { Title = opts } end
             opts = opts or {}
             local title = opts.Title or ""
-            local box = opts.Box ~= false
-            local opened = opts.Opened ~= false
+            local box = opts.Box == true
+            local opened = opts.Opened == true
+            local hideHeader = (title == "" and box == false)
 
             local holder = Instance.new("Frame",content)
             holder.Name = "Section"
@@ -2297,30 +2314,34 @@ function FantasyUI:CreateWindow(config)
                 pad.PaddingRight = UDim.new(0,8)
             end
 
-            local header = Instance.new("TextButton",holder)
-            header.Size = UDim2.new(1,0,0,24)
-            header.BackgroundTransparency = 1
-            header.Text = ""
-            header.AutoButtonColor = false
-            header.LayoutOrder = 1
-            header.ZIndex = 9
+            local header
+            local chev
+            if not hideHeader then
+                header = Instance.new("TextButton",holder)
+                header.Size = UDim2.new(1,0,0,24)
+                header.BackgroundTransparency = 1
+                header.Text = ""
+                header.AutoButtonColor = false
+                header.LayoutOrder = 1
+                header.ZIndex = 9
 
-            local chev = createIcon(header, "chevron-down", 12, CONFIG.Color.SubText)
-            chev.AnchorPoint = Vector2.new(0,0.5)
-            chev.Position = UDim2.new(0,6,0.5,0)
-            chev.Rotation = opened and 180 or 0
+                chev = createIcon(header, "chevron-down", 12, CONFIG.Color.SubText)
+                chev.AnchorPoint = Vector2.new(0,0.5)
+                chev.Position = UDim2.new(0,6,0.5,0)
+                chev.Rotation = opened and 180 or 0
 
-            local titleLbl = Instance.new("TextLabel",header)
-            titleLbl.BackgroundTransparency = 1
-            titleLbl.Font = Enum.Font.GothamBold
-            titleLbl.Text = title
-            titleLbl.TextColor3 = CONFIG.Color.SectionTitle
-            titleLbl.TextSize = 11
-            titleLbl.TextXAlignment = Enum.TextXAlignment.Left
-            titleLbl.AnchorPoint = Vector2.new(0,0.5)
-            titleLbl.Position = UDim2.new(0,24,0.5,0)
-            titleLbl.Size = UDim2.new(1,-30,1,0)
-            titleLbl.ZIndex = 9
+                local titleLbl = Instance.new("TextLabel",header)
+                titleLbl.BackgroundTransparency = 1
+                titleLbl.Font = Enum.Font.GothamBold
+                titleLbl.Text = title
+                titleLbl.TextColor3 = CONFIG.Color.SectionTitle
+                titleLbl.TextSize = 11
+                titleLbl.TextXAlignment = Enum.TextXAlignment.Left
+                titleLbl.AnchorPoint = Vector2.new(0,0.5)
+                titleLbl.Position = UDim2.new(0,24,0.5,0)
+                titleLbl.Size = UDim2.new(1,-30,1,0)
+                titleLbl.ZIndex = 9
+            end
 
             local body = Instance.new("Frame",holder)
             body.Name = "Body"
@@ -2345,11 +2366,15 @@ function FantasyUI:CreateWindow(config)
                 return secOrder
             end
 
-            header.MouseButton1Click:Connect(function()
-                opened = not opened
-                body.Visible = opened
-                TweenService:Create(chev,TweenInfo.new(0.2),{Rotation = opened and 180 or 0}):Play()
-            end)
+            if header then
+                header.MouseButton1Click:Connect(function()
+                    opened = not opened
+                    body.Visible = opened
+                    if chev then
+                        TweenService:Create(chev,TweenInfo.new(0.2),{Rotation = opened and 180 or 0}):Play()
+                    end
+                end)
+            end
 
             function section:Button(o)
                 o = o or {}
@@ -2403,8 +2428,41 @@ function FantasyUI:CreateWindow(config)
                 createDivider(body, nextSecOrder())
             end
 
+            function section:Section(o)
+                o = o or {}
+                local t = o.Title or ""
+                local label = Instance.new("TextLabel", body)
+                label.Size = UDim2.new(1,0,0,22)
+                label.BackgroundTransparency = 1
+                label.Font = Enum.Font.GothamBold
+                label.Text = t
+                label.TextColor3 = CONFIG.Color.Text
+                label.TextSize = 12
+                label.TextXAlignment = Enum.TextXAlignment.Left
+                label.LayoutOrder = nextSecOrder()
+                label.ZIndex = 9
+                return { Title = t }
+            end
+
             return section
         end
+
+        local __defSec = nil
+        local function __getDefSec()
+            if not __defSec then
+                __defSec = tabObj:Section({Title="", Box=false})
+            end
+            return __defSec
+        end
+        tabObj.Button    = function(self, o) return __getDefSec():Button(o)    end
+        tabObj.Toggle    = function(self, o) return __getDefSec():Toggle(o)    end
+        tabObj.Slider    = function(self, o) return __getDefSec():Slider(o)    end
+        tabObj.Input     = function(self, o) return __getDefSec():Input(o)     end
+        tabObj.Dropdown  = function(self, o) return __getDefSec():Dropdown(o)  end
+        tabObj.Paragraph = function(self, o) return __getDefSec():Paragraph(o) end
+        tabObj.Keybind   = function(self, o) return __getDefSec():Keybind(o)   end
+        tabObj.Divider   = function(self)    return __getDefSec():Divider()    end
+        tabObj.Select    = function(self) end
 
         return tabObj
     end
