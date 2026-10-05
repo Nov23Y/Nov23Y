@@ -1,5 +1,5 @@
---这是一个开源免费的Roblox UI
---By IYOULIN
+--这是一个开源免费的Roblox UI库
+--BY IYOULIN
 
 local TweenService     = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -11,7 +11,7 @@ local playerGui = player:WaitForChild("PlayerGui")
 
 local FantasyUI = {}
 FantasyUI.__index = FantasyUI
-FantasyUI.Version = "1.0.0"
+FantasyUI.Version = " 1.0"
 
 local DEFAULT_KEY_FILE = "fantasy_key.txt"
 
@@ -28,6 +28,17 @@ local ICON_MAP = {
     ["type"]="T", ["command"]="⌘", ["image"]="🖼", ["home"]="⌂", ["gamepad-2"]="🎮",
     ["activity"]="📈", ["list"]="☰", ["layers"]="▤", ["wrench"]="🔧", ["shield"]="🛡",
     ["rocket"]="🚀", ["volume-2"]="🔊",
+}
+
+local TAB_GRADIENTS = {
+    {c1 = Color3.fromRGB(100,150,255), c2 = Color3.fromRGB(160,100,255)},
+    {c1 = Color3.fromRGB(255,120,180), c2 = Color3.fromRGB(255,80,120)},
+    {c1 = Color3.fromRGB(80,210,140),  c2 = Color3.fromRGB(50,180,120)},
+    {c1 = Color3.fromRGB(255,170,80),  c2 = Color3.fromRGB(255,110,60)},
+    {c1 = Color3.fromRGB(90,200,255),  c2 = Color3.fromRGB(80,150,255)},
+    {c1 = Color3.fromRGB(200,120,255), c2 = Color3.fromRGB(150,80,255)},
+    {c1 = Color3.fromRGB(255,210,80),  c2 = Color3.fromRGB(255,160,60)},
+    {c1 = Color3.fromRGB(120,220,220), c2 = Color3.fromRGB(80,180,200)},
 }
 
 local function isImageIcon(s)
@@ -491,6 +502,7 @@ function FantasyUI:CreateWindow(config)
     local dots = {}
     for i=1,3 do
         local d = Instance.new("Frame",dotsFrame)
+        d.AnchorPoint = Vector2.new(0,0.5)
         d.Size = UDim2.fromOffset(4,4)
         d.BackgroundColor3 = CONFIG.Color.Green
         d.BorderSizePixel = 0
@@ -557,6 +569,22 @@ function FantasyUI:CreateWindow(config)
         end
     end
 
+    local pulseToken = nil
+    local function pulseIsland()
+        pulseToken = nil
+        local myToken = {}
+        pulseToken = myToken
+        local baseW = CONFIG.IslandWidth
+        local baseH = CONFIG.IslandHeight
+        TweenService:Create(island, TweenInfo.new(0.09, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { Size = UDim2.fromOffset(baseW * 0.88, baseH * 0.88) }):Play()
+        TweenService:Create(islandCorner, TweenInfo.new(0.09, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { CornerRadius = UDim.new(0, (baseH * 0.88) / 2) }):Play()
+        task.delay(0.09, function()
+            if pulseToken ~= myToken then return end
+            TweenService:Create(island, TweenInfo.new(0.42, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Size = UDim2.fromOffset(baseW, baseH) }):Play()
+            TweenService:Create(islandCorner, TweenInfo.new(0.42, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { CornerRadius = UDim.new(0, baseH / 2) }):Play()
+        end)
+    end
+
     task.spawn(function()
         while island.Parent do
             local t1 = TweenService:Create(glow,TweenInfo.new(1.3,Enum.EasingStyle.Sine,Enum.EasingDirection.InOut),{Size=UDim2.fromOffset(30,30),BackgroundTransparency=0.85})
@@ -567,6 +595,23 @@ function FantasyUI:CreateWindow(config)
             if not island.Parent then break end
         end
     end)
+
+    for i, dot in ipairs(dots) do
+        task.spawn(function()
+            task.wait((i - 1) * 0.15)
+            while island.Parent do
+                local t1 = TweenService:Create(dot, TweenInfo.new(0.35, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), { Size = UDim2.fromOffset(4, 12) })
+                t1:Play()
+                t1.Completed:Wait()
+                if not island.Parent then break end
+                local t2 = TweenService:Create(dot, TweenInfo.new(0.35, Enum.EasingStyle.Sine, Enum.EasingDirection.In), { Size = UDim2.fromOffset(4, 4) })
+                t2:Play()
+                t2.Completed:Wait()
+                if not island.Parent then break end
+                task.wait(0.4)
+            end
+        end)
+    end
 
     local panelFrame = Instance.new("Frame")
     panelFrame.Name = "Panel"
@@ -763,12 +808,18 @@ function FantasyUI:CreateWindow(config)
         for i, tab in ipairs(tabs) do
             local active = (i == index)
             tab.content.Visible = active
-            TweenService:Create(tab.button,TweenInfo.new(0.18,Enum.EasingStyle.Quart),{
+            TweenService:Create(tab.button, TweenInfo.new(0.18, Enum.EasingStyle.Quart), {
                 BackgroundTransparency = active and 0.3 or 1
             }):Play()
-            TweenService:Create(tab.label,TweenInfo.new(0.18,Enum.EasingStyle.Quart),{
-                TextColor3 = active and Color3.fromRGB(255,255,255) or CONFIG.Color.SubText
+            TweenService:Create(tab.label, TweenInfo.new(0.18, Enum.EasingStyle.Quart), {
+                TextColor3 = active and Color3.fromRGB(255, 255, 255) or CONFIG.Color.SubText
             }):Play()
+            if tab.iconGlow then
+                TweenService:Create(tab.iconGlow, TweenInfo.new(0.22, Enum.EasingStyle.Quart), {
+                    BackgroundTransparency = active and 0.25 or 0.6,
+                    Size = active and UDim2.fromOffset(32, 32) or UDim2.fromOffset(26, 26),
+                }):Play()
+            end
         end
         if applySearch then task.defer(function() applySearch(searchBox.Text) end) end
     end
@@ -909,7 +960,7 @@ function FantasyUI:CreateWindow(config)
         local style = (opts.Type == "Checkbox") and "Checkbox" or "Toggle"
         local state = opts.Value or false
 
-        local apply, setter
+        local apply
 
         if style == "Toggle" then
             local TW, TH = 40, 22
@@ -1691,7 +1742,7 @@ function FantasyUI:CreateWindow(config)
     ball.MouseButton1Click:Connect(function()
         showModal({
             Title = "关闭窗口",
-            Content = "确定要关闭 FantasyUI 吗？",
+            Content = "确定要关闭 UI 吗？",
             Icon = "triangle-alert",
             Buttons = {
                 { Title = "取消", Variant = "Cancel", Callback = nil },
@@ -1701,6 +1752,7 @@ function FantasyUI:CreateWindow(config)
     end)
 
     islandBtn.MouseButton1Click:Connect(function()
+        pulseIsland()
         if isPanelOpen then closePanel() else openPanel() end
     end)
 
@@ -1813,7 +1865,7 @@ function FantasyUI:CreateWindow(config)
         local order = #tabs + 1
 
         local btn = Instance.new("TextButton",tabContainer)
-        btn.Size = UDim2.new(1,0,0,28)
+        btn.Size = UDim2.new(1,0,0,32)
         btn.BackgroundColor3 = CONFIG.Color.TabActive
         btn.BackgroundTransparency = 1
         btn.BorderSizePixel = 0
@@ -1821,29 +1873,80 @@ function FantasyUI:CreateWindow(config)
         btn.AutoButtonColor = false
         btn.LayoutOrder = order
         btn.ZIndex = 8
-        Instance.new("UICorner",btn).CornerRadius = UDim.new(0,7)
+        Instance.new("UICorner",btn).CornerRadius = UDim.new(0,8)
 
-        local iconBg = Instance.new("Frame",btn)
-        iconBg.AnchorPoint = Vector2.new(0,0.5)
-        iconBg.Position = UDim2.new(0,6,0.5,0)
-        iconBg.Size = UDim2.fromOffset(18,18)
-        iconBg.BackgroundColor3 = Color3.fromRGB(90,140,255)
+        local gradColors = TAB_GRADIENTS[((order - 1) % #TAB_GRADIENTS) + 1]
+
+        local iconWrap = Instance.new("Frame", btn)
+        iconWrap.AnchorPoint = Vector2.new(0, 0.5)
+        iconWrap.Position = UDim2.new(0, 5, 0.5, 0)
+        iconWrap.Size = UDim2.fromOffset(24, 24)
+        iconWrap.BackgroundTransparency = 1
+        iconWrap.ZIndex = 9
+
+        local iconGlow = Instance.new("Frame", iconWrap)
+        iconGlow.AnchorPoint = Vector2.new(0.5, 0.5)
+        iconGlow.Position = UDim2.fromScale(0.5, 0.5)
+        iconGlow.Size = UDim2.fromOffset(26, 26)
+        iconGlow.BackgroundColor3 = gradColors.c1
+        iconGlow.BackgroundTransparency = 0.6
+        iconGlow.BorderSizePixel = 0
+        iconGlow.ZIndex = 8
+        Instance.new("UICorner", iconGlow).CornerRadius = UDim.new(1, 0)
+
+        local iconBg = Instance.new("Frame", iconWrap)
+        iconBg.AnchorPoint = Vector2.new(0.5, 0.5)
+        iconBg.Position = UDim2.fromScale(0.5, 0.5)
+        iconBg.Size = UDim2.fromOffset(22, 22)
+        iconBg.BackgroundColor3 = gradColors.c1
         iconBg.BorderSizePixel = 0
         iconBg.ZIndex = 9
-        Instance.new("UICorner",iconBg).CornerRadius = UDim.new(0,5)
-        local iconLbl = Instance.new("TextLabel",iconBg)
-        iconLbl.Size = UDim2.fromScale(1,1)
+        Instance.new("UICorner", iconBg).CornerRadius = UDim.new(0, 7)
+
+        local iconGrad = Instance.new("UIGradient", iconBg)
+        iconGrad.Rotation = 135
+        iconGrad.Color = ColorSequence.new({
+            ColorSequenceKeypoint.new(0, gradColors.c1),
+            ColorSequenceKeypoint.new(1, gradColors.c2),
+        })
+
+        local iconStroke = Instance.new("UIStroke", iconBg)
+        iconStroke.Thickness = 1
+        iconStroke.Transparency = 0.6
+        iconStroke.Color = Color3.fromRGB(255, 255, 255)
+
+        local iconShine = Instance.new("Frame", iconBg)
+        iconShine.AnchorPoint = Vector2.new(0.5, 0)
+        iconShine.Position = UDim2.new(0.5, 0, 0, 2)
+        iconShine.Size = UDim2.new(1, -10, 0, 1)
+        iconShine.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        iconShine.BackgroundTransparency = 0.4
+        iconShine.BorderSizePixel = 0
+        iconShine.ZIndex = 10
+        Instance.new("UICorner", iconShine).CornerRadius = UDim.new(1, 0)
+
+        local iconLbl = Instance.new("TextLabel", iconBg)
+        iconLbl.Size = UDim2.fromScale(1, 1)
         iconLbl.BackgroundTransparency = 1
         iconLbl.Font = Enum.Font.GothamBold
-        iconLbl.Text = ICON_MAP[tabIcon] or tostring(tabIcon):sub(1,1):upper()
-        iconLbl.TextColor3 = Color3.fromRGB(255,255,255)
-        iconLbl.TextSize = 10
-        iconLbl.ZIndex = 10
+        iconLbl.Text = ICON_MAP[tabIcon] or tostring(tabIcon):sub(1, 1):upper()
+        iconLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
+        iconLbl.TextSize = 11
+        iconLbl.ZIndex = 11
+
+        btn.MouseEnter:Connect(function()
+            TweenService:Create(iconBg, TweenInfo.new(0.18, Enum.EasingStyle.Quart), { Size = UDim2.fromOffset(24, 24) }):Play()
+            TweenService:Create(iconGlow, TweenInfo.new(0.18), { Size = UDim2.fromOffset(30, 30), BackgroundTransparency = 0.4 }):Play()
+        end)
+        btn.MouseLeave:Connect(function()
+            TweenService:Create(iconBg, TweenInfo.new(0.22, Enum.EasingStyle.Quart), { Size = UDim2.fromOffset(22, 22) }):Play()
+            TweenService:Create(iconGlow, TweenInfo.new(0.22), { Size = UDim2.fromOffset(26, 26), BackgroundTransparency = 0.6 }):Play()
+        end)
 
         local label = Instance.new("TextLabel",btn)
         label.AnchorPoint = Vector2.new(0,0.5)
-        label.Position = UDim2.new(0,30,0.5,0)
-        label.Size = UDim2.new(1,-34,1,0)
+        label.Position = UDim2.new(0,36,0.5,0)
+        label.Size = UDim2.new(1,-40,1,0)
         label.BackgroundTransparency = 1
         label.Font = Enum.Font.GothamMedium
         label.Text = tabTitle
@@ -1875,7 +1978,7 @@ function FantasyUI:CreateWindow(config)
         cp.PaddingLeft = UDim.new(0,2)
         cp.PaddingRight = UDim.new(0,2)
 
-        table.insert(tabs, { button = btn, label = label, content = content, icon = iconLbl })
+        table.insert(tabs, { button = btn, label = label, content = content, icon = iconLbl, iconGlow = iconGlow })
         btn.MouseButton1Click:Connect(function() switchTab(order) end)
         if #tabs == 1 then switchTab(1) end
 
