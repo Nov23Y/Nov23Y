@@ -111,15 +111,68 @@ local function buildKeyUI(keySystem, keyFile, saveKey, onSuccess)
     logoStroke.Transparency = 0.6
     logoStroke.Thickness = 1
     logoStroke.Parent = logoWrap
-    local logoIcon = Instance.new("TextLabel")
-    logoIcon.Size = UDim2.fromScale(1, 1)
-    logoIcon.BackgroundTransparency = 1
-    logoIcon.Font = Enum.Font.GothamBold
-    logoIcon.Text = "✦"
-    logoIcon.TextColor3 = Color3.fromRGB(255, 150, 200)
-    logoIcon.TextSize = 24
-    logoIcon.ZIndex = 12
-    logoIcon.Parent = logoWrap
+
+    local diamondWrap = Instance.new("Frame")
+    diamondWrap.AnchorPoint = Vector2.new(0.5, 0.5)
+    diamondWrap.Position = UDim2.fromScale(0.5, 0.5)
+    diamondWrap.Size = UDim2.fromOffset(22, 22)
+    diamondWrap.BackgroundTransparency = 1
+    diamondWrap.ZIndex = 12
+    diamondWrap.Parent = logoWrap
+
+    local diamondOuter = Instance.new("Frame")
+    diamondOuter.AnchorPoint = Vector2.new(0.5, 0.5)
+    diamondOuter.Position = UDim2.fromScale(0.5, 0.5)
+    diamondOuter.Size = UDim2.fromOffset(18, 18)
+    diamondOuter.BackgroundTransparency = 1
+    diamondOuter.Rotation = 45
+    diamondOuter.ZIndex = 12
+    diamondOuter.Parent = diamondWrap
+
+    local diamondOuterCorner = Instance.new("UICorner")
+    diamondOuterCorner.CornerRadius = UDim.new(0, 4)
+    diamondOuterCorner.Parent = diamondOuter
+
+    local diamondStroke = Instance.new("UIStroke")
+    diamondStroke.Color = Color3.fromRGB(255, 255, 255)
+    diamondStroke.Thickness = 2
+    diamondStroke.Transparency = 0
+    diamondStroke.Parent = diamondOuter
+
+    local diamondStrokeGrad = Instance.new("UIGradient")
+    diamondStrokeGrad.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 130, 200)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(120, 180, 255)),
+    })
+    diamondStrokeGrad.Parent = diamondStroke
+
+    local diamondInner = Instance.new("Frame")
+    diamondInner.AnchorPoint = Vector2.new(0.5, 0.5)
+    diamondInner.Position = UDim2.fromScale(0.5, 0.5)
+    diamondInner.Size = UDim2.fromOffset(7, 7)
+    diamondInner.BackgroundColor3 = Color3.fromRGB(255, 150, 200)
+    diamondInner.BorderSizePixel = 0
+    diamondInner.Rotation = 45
+    diamondInner.ZIndex = 13
+    diamondInner.Parent = diamondWrap
+
+    local diamondInnerCorner = Instance.new("UICorner")
+    diamondInnerCorner.CornerRadius = UDim.new(0, 1)
+    diamondInnerCorner.Parent = diamondInner
+
+    task.spawn(function()
+        while diamondInner.Parent and keyGui.Parent do
+            TweenService:Create(diamondInner, TweenInfo.new(1.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
+                Size = UDim2.fromOffset(9, 9),
+            }):Play()
+            task.wait(1.5)
+            if not diamondInner.Parent or not keyGui.Parent then break end
+            TweenService:Create(diamondInner, TweenInfo.new(1.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
+                Size = UDim2.fromOffset(7, 7),
+            }):Play()
+            task.wait(1.5)
+        end
+    end)
 
     local title = Instance.new("TextLabel")
     title.AnchorPoint = Vector2.new(0.5, 0)
@@ -1082,12 +1135,6 @@ function FantasyUI:CreateWindow(config)
 
         local state = defaultOn
         local animating = false
-        local api = { Get = function() return state end }
-        function api:Set(v)
-            state = v and true or false
-            TweenService:Create(knob, TweenInfo.new(0.22), { Position = UDim2.new(0, state and KON or KOFF, 0.5, 0) }):Play()
-            TweenService:Create(track, TweenInfo.new(0.22), { BackgroundColor3 = state and CONFIG.Color.Pink or CONFIG.Color.TrackOff }):Play()
-        end
         track.MouseButton1Click:Connect(function()
             if animating then return end
             animating = true
@@ -1097,7 +1144,6 @@ function FantasyUI:CreateWindow(config)
             if onChanged then onChanged(state) end
             task.delay(0.25, function() animating = false end)
         end)
-        return api
     end
 
     local function createCardButton(parent, label, color, order, onClick)
@@ -1124,7 +1170,6 @@ function FantasyUI:CreateWindow(config)
         btn.MouseButton1Click:Connect(function()
             if onClick then onClick() end
         end)
-        return card
     end
 
     local function createCardInput(parent, label, placeholder, textarea, order, onChanged)
@@ -1171,7 +1216,6 @@ function FantasyUI:CreateWindow(config)
         inputBox.FocusLost:Connect(function()
             if onChanged then onChanged(inputBox.Text) end
         end)
-        return { Get = function() return inputBox.Text end, Set = function(v) inputBox.Text = v end }
     end
 
     local function createCardSlider(parent, label, desc, min, max, default, rounding, order, onChanged)
@@ -1258,7 +1302,6 @@ function FantasyUI:CreateWindow(config)
 
         local state = default
         local trackDragging = false
-        local api = { Get = function() return state end }
 
         local function updateFromX(x)
             local rel = math.clamp((x - barBg.AbsolutePosition.X) / barBg.AbsoluteSize.X, 0, 1)
@@ -1291,7 +1334,6 @@ function FantasyUI:CreateWindow(config)
                 trackDragging = false
             end
         end)
-        return api
     end
 
     local function createCardDropdown(parent, label, values, default, multi, order, onChanged)
@@ -1486,8 +1528,6 @@ function FantasyUI:CreateWindow(config)
                 end)
             end)
         end)
-
-        return { Get = function() return multi and selected or selected[1] end }
     end
 
     local function createCardParagraph(parent, title, content, buttons, order)
@@ -1962,16 +2002,12 @@ function FantasyUI:CreateWindow(config)
 
         function tabObj:Slider(opts)
             opts = opts or {}
-            local rounding = opts.Rounding or 0
-            createCardSlider(content, opts.Title or "滑块", opts.Desc, opts.Min or 0, opts.Max or 100, opts.Default or 50, rounding, nextOrder(), opts.Callback)
+            createCardSlider(content, opts.Title or "滑块", opts.Desc, opts.Min or 0, opts.Max or 100, opts.Default or 50, opts.Rounding or 0, nextOrder(), opts.Callback)
         end
 
         function tabObj:Dropdown(opts)
             opts = opts or {}
-            local values = opts.Values or {}
-            local default = opts.Value or opts.Default
-            local multi = opts.Multi == true
-            createCardDropdown(content, opts.Title or "下拉", values, default, multi, nextOrder(), opts.Callback)
+            createCardDropdown(content, opts.Title or "下拉", opts.Values or {}, opts.Value or opts.Default, opts.Multi == true, nextOrder(), opts.Callback)
         end
 
         function tabObj:Paragraph(opts)
@@ -1984,21 +2020,17 @@ function FantasyUI:CreateWindow(config)
 
     function window:Notify(opts)
         opts = opts or {}
-        local content = opts.Content or opts.Title or "通知"
-        showToast(content)
+        showToast(opts.Content or opts.Title or "通知")
     end
 
     function window:Popup(opts)
-        opts = opts or {}
         showModal()
     end
 
     function window:Open() openPanel() end
     function window:Close() closePanel() end
     function window:Destroy() gui:Destroy() end
-    function window:SetVisible(v)
-        gui.Enabled = v and true or false
-    end
+    function window:SetVisible(v) gui.Enabled = v and true or false end
 
     return window
 end
