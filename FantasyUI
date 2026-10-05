@@ -8,7 +8,7 @@ local playerGui = player:WaitForChild("PlayerGui")
 
 local FantasyUI = {}
 FantasyUI.__index = FantasyUI
-FantasyUI.Version = "2.1.0"
+FantasyUI.Version = "2.1.1"
 
 local DEFAULT_KEY_FILE = "fantasy_key.txt"
 
@@ -1677,6 +1677,7 @@ function FantasyUI:CreateWindow(config)
         local d = newLabel(card, opts.Desc or "", tx, 26, 0, 30, 10, CONFIG.Color.SubText, false)
         d.Size = UDim2.new(1,-tx-12,0,hasBtn and 20 or 30)
         d.TextWrapped = true
+        d.TextTruncate = Enum.TextTruncate.None
         d.TextYAlignment = Enum.TextYAlignment.Top
 
         if hasBtn then
