@@ -1,6 +1,5 @@
 --这是一个开源免费的Roblox UI库
 --BY IYOULIN
-
 local TweenService     = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local Players          = game:GetService("Players")
@@ -11,24 +10,9 @@ local playerGui = player:WaitForChild("PlayerGui")
 
 local FantasyUI = {}
 FantasyUI.__index = FantasyUI
-FantasyUI.Version = " 1.0"
+FantasyUI.Version = "1.0"
 
 local DEFAULT_KEY_FILE = "fantasy_key.txt"
-
-local ICON_MAP = {
-    ["layout-grid"]="▦", ["keyboard"]="⌨", ["toggle-right"]="◉", ["toggle-left"]="◐",
-    ["settings"]="⚙", ["mouse-pointer-click"]="☝", ["mouse-pointer"]="➤", ["pointer"]="➤",
-    ["palette"]="🎨", ["save"]="💾", ["folder-open"]="📂", ["rotate-ccw"]="↺",
-    ["user"]="👤", ["file-text"]="📄", ["info"]="ℹ", ["external-link"]="↗",
-    ["book-open"]="📖", ["check"]="✓", ["x"]="✕", ["moon"]="🌙", ["sun"]="☀",
-    ["zap"]="⚡", ["sparkles"]="✨", ["key"]="🔑", ["search"]="🔍",
-    ["chevron-down"]="⌄", ["chevron-right"]="›", ["triangle-alert"]="⚠",
-    ["clock"]="🕒", ["star"]="★", ["heart"]="♥", ["bell"]="🔔", ["lock"]="🔒",
-    ["terminal"]="▶", ["code"]="⌨", ["sliders-horizontal"]="≡", ["text-cursor-input"]="✎",
-    ["type"]="T", ["command"]="⌘", ["image"]="🖼", ["home"]="⌂", ["gamepad-2"]="🎮",
-    ["activity"]="📈", ["list"]="☰", ["layers"]="▤", ["wrench"]="🔧", ["shield"]="🛡",
-    ["rocket"]="🚀", ["volume-2"]="🔊",
-}
 
 local TAB_GRADIENTS = {
     {c1 = Color3.fromRGB(100,150,255), c2 = Color3.fromRGB(160,100,255)},
@@ -43,6 +27,294 @@ local TAB_GRADIENTS = {
 
 local function isImageIcon(s)
     return type(s)=="string" and (s:match("^rbxassetid://") or s:match("^https?://"))
+end
+
+local function drawIcon(parent, name, color)
+    for _, c in ipairs(parent:GetChildren()) do c:Destroy() end
+    local bg = Color3.fromRGB(28,28,34)
+
+    local function F(x, y, w, h, r)
+        local f = Instance.new("Frame", parent)
+        f.Position = UDim2.fromScale(x, y)
+        f.Size = UDim2.fromScale(w, h)
+        f.BackgroundColor3 = color
+        f.BorderSizePixel = 0
+        if r and r > 0 then
+            local c = Instance.new("UICorner", f)
+            if r == 1 then
+                c.CornerRadius = UDim.new(1, 0)
+            else
+                c.CornerRadius = UDim.new(0, r)
+            end
+        end
+        return f
+    end
+
+    local function O(x, y, w, h, t)
+        local f = Instance.new("Frame", parent)
+        f.Position = UDim2.fromScale(x, y)
+        f.Size = UDim2.fromScale(w, h)
+        f.BackgroundTransparency = 1
+        local s = Instance.new("UIStroke", f)
+        s.Color = color
+        s.Thickness = t or 1.5
+        local c = Instance.new("UICorner", f)
+        c.CornerRadius = UDim.new(1, 0)
+        return f
+    end
+
+    local P = {}
+    P["layout-grid"] = function()
+        F(.05,.05,.4,.4,2) F(.55,.05,.4,.4,2)
+        F(.05,.55,.4,.4,2) F(.55,.55,.4,.4,2)
+    end
+    P["keyboard"] = function()
+        O(.02,.2,.96,.6,1.3)
+        for i=0,3 do F(.12+i*.22,.32,.1,.1,0) end
+        for i=0,2 do F(.2+i*.22,.56,.1,.1,0) end
+    end
+    P["toggle-right"] = function()
+        F(0,.2,1,.6,1)
+        local k = F(.6,.27,.37,.46,1)
+        k.BackgroundColor3 = Color3.new(1,1,1)
+    end
+    P["toggle-left"] = function()
+        F(0,.2,1,.6,1)
+        local k = F(.03,.27,.37,.46,1)
+        k.BackgroundColor3 = Color3.new(1,1,1)
+    end
+    P["settings"] = function()
+        O(.15,.15,.7,.7,1.5)
+        F(.42,.42,.16,.16,1)
+        for i=0,7 do
+            local a = i*math.pi/4
+            F(.5+.42*math.cos(a)-.06, .5+.42*math.sin(a)-.06, .12, .12, 1)
+        end
+    end
+    P["mouse-pointer-click"] = function()
+        F(.4,.15,.14,.7,0)
+        local t = F(.35,.1,.24,.24,0)
+        t.Rotation = 45
+    end
+    P["mouse-pointer"] = P["mouse-pointer-click"]
+    P["pointer"] = P["mouse-pointer-click"]
+    P["palette"] = function()
+        O(.05,.1,.9,.8,1.5)
+        F(.22,.32,.15,.15,1) F(.63,.32,.15,.15,1)
+        F(.22,.62,.15,.15,1) F(.63,.62,.15,.15,1)
+    end
+    P["save"] = function()
+        O(.1,.1,.8,.8,2)
+        F(.3,.12,.4,.25,0)
+        F(.25,.55,.5,.35,0)
+    end
+    P["folder-open"] = function()
+        F(.05,.3,.9,.55,2)
+        F(.05,.18,.4,.18,2)
+    end
+    P["folder"] = P["folder-open"]
+    P["rotate-ccw"] = function()
+        O(.15,.15,.7,.7,1.5)
+        local a = F(.02,.02,.22,.22,0)
+        a.Rotation = 45
+    end
+    P["user"] = function()
+        F(.32,.1,.36,.36,1)
+        F(.15,.55,.7,.42,8)
+    end
+    P["file-text"] = function()
+        F(.2,.05,.6,.9,2)
+        for i=0,2 do
+            local l = F(.3,.28+i*.2,.4,.08,0)
+            l.BackgroundColor3 = bg
+        end
+    end
+    P["file"] = P["file-text"]
+    P["info"] = function()
+        F(.42,.1,.16,.16,1)
+        F(.42,.35,.16,.55,0)
+    end
+    P["external-link"] = function()
+        O(.05,.3,.55,.55,1.5)
+        local s = F(.35,.5,.55,.1,0)
+        s.Rotation = -45
+        local t = F(.6,.1,.3,.3,0)
+        t.Rotation = 45
+    end
+    P["book-open"] = function()
+        O(.05,.2,.42,.65,2)
+        O(.53,.2,.42,.65,2)
+    end
+    P["book"] = P["book-open"]
+    P["check"] = function()
+        local a = F(.1,.5,.35,.12,0) a.Rotation = 45
+        local b = F(.3,.45,.6,.12,0)  b.Rotation = -45
+    end
+    P["x"] = function()
+        local a = F(.1,.44,.8,.12,0) a.Rotation = 45
+        local b = F(.1,.44,.8,.12,0) b.Rotation = -45
+    end
+    P["close"] = P["x"]
+    P["moon"] = function()
+        O(.1,.1,.8,.8,1.5)
+        local c = F(.42,.05,.7,.8,1)
+        c.BackgroundColor3 = bg
+    end
+    P["sun"] = function()
+        O(.28,.28,.44,.44,1.5)
+        for i=0,7 do
+            local a = i*math.pi/4
+            local r = F(.5+.4*math.cos(a)-.06,.5+.4*math.sin(a)-.05,.1,.08,0)
+            r.Rotation = math.deg(a)
+        end
+    end
+    P["zap"] = function()
+        local a = F(.5,.05,.12,.5,0) a.Rotation = 30
+        local b = F(.35,.5,.12,.45,0) b.Rotation = 30
+    end
+    P["sparkles"] = function()
+        F(.42,.1,.16,.8,1)
+        F(.1,.42,.8,.16,1)
+    end
+    P["star"] = P["sparkles"]
+    P["key"] = function()
+        O(.05,.3,.4,.4,1.5)
+        F(.4,.42,.55,.16,0)
+        F(.7,.55,.08,.15,0)
+        F(.85,.55,.08,.15,0)
+    end
+    P["search"] = function()
+        O(.1,.1,.6,.6,1.5)
+        local h = F(.6,.6,.32,.12,0) h.Rotation = 45
+    end
+    P["chevron-down"] = function()
+        local a = F(.12,.4,.5,.13,0) a.Rotation = 45
+        local b = F(.38,.4,.5,.13,0) b.Rotation = -45
+    end
+    P["chevron-right"] = function()
+        local a = F(.35,.12,.13,.5,0) a.Rotation = 45
+        local b = F(.35,.38,.13,.5,0) b.Rotation = -45
+    end
+    P["chevron-up"] = function()
+        local a = F(.12,.47,.5,.13,0) a.Rotation = -45
+        local b = F(.38,.47,.5,.13,0) b.Rotation = 45
+    end
+    P["triangle-alert"] = function()
+        local t = F(.4,.12,.5,.5,0) t.Rotation = 45
+        local i = F(.42,.22,.16,.35,0) i.BackgroundColor3 = bg
+        F(.42,.65,.16,.16,1)
+    end
+    P["clock"] = function()
+        O(.1,.1,.8,.8,1.5)
+        F(.47,.28,.06,.28,0)
+        F(.47,.5,.22,.06,0)
+    end
+    P["bell"] = function()
+        F(.25,.15,.5,.55,4)
+        F(.15,.65,.7,.1,1)
+        F(.42,.8,.16,.12,1)
+    end
+    P["lock"] = function()
+        F(.2,.45,.6,.5,2)
+        O(.3,.15,.4,.4,1.5)
+    end
+    P["terminal"] = function()
+        O(.05,.15,.9,.7,2)
+        local a1 = F(.15,.42,.22,.1,0) a1.Rotation = 45
+        local a2 = F(.15,.42,.22,.1,0) a2.Rotation = -45
+        F(.5,.45,.28,.1,0)
+    end
+    P["code"] = P["terminal"]
+    P["sliders-horizontal"] = function()
+        F(.1,.22,.8,.08,1)
+        F(.1,.46,.8,.08,1)
+        F(.1,.7,.8,.08,1)
+        F(.28,.12,.16,.28,1)
+        F(.55,.36,.16,.28,1)
+        F(.2,.6,.16,.28,1)
+    end
+    P["sliders"] = P["sliders-horizontal"]
+    P["type"] = function()
+        F(.15,.15,.7,.12,1)
+        F(.44,.15,.12,.7,1)
+    end
+    P["text"] = P["type"]
+    P["command"] = function()
+        O(.05,.05,.3,.3,1.2)
+        O(.65,.05,.3,.3,1.2)
+        O(.05,.65,.3,.3,1.2)
+        O(.65,.65,.3,.3,1.2)
+        F(.33,.33,.34,.34,0)
+    end
+    P["image"] = function()
+        O(.1,.15,.8,.7,2)
+        F(.22,.28,.14,.14,1)
+        local t = F(.35,.55,.5,.3,0)
+        t.Rotation = 45
+    end
+    P["home"] = function()
+        local r = F(.4,.1,.4,.4,0) r.Rotation = 45
+        F(.2,.5,.6,.4,2)
+    end
+    P["gamepad-2"] = function()
+        F(.1,.3,.8,.5,8)
+        local d1 = F(.2,.45,.15,.15,1) d1.BackgroundColor3 = bg
+        local d2 = F(.65,.45,.15,.15,1) d2.BackgroundColor3 = bg
+    end
+    P["gamepad"] = P["gamepad-2"]
+    P["activity"] = function()
+        local segs = {
+            {.05,.5,.15,.08,0}, {.2,.35,.12,.08,30},
+            {.32,.55,.12,.08,-30}, {.44,.55,.15,.08,0},
+            {.56,.35,.12,.08,30}, {.68,.35,.12,.08,-30},
+            {.8,.5,.15,.08,0},
+        }
+        for _,s in ipairs(segs) do
+            local f = F(s[1],s[2],s[3],s[4],0)
+            f.Rotation = s[5]
+        end
+    end
+    P["list"] = function()
+        for i=0,2 do
+            F(.05,.2+i*.25,.15,.15,1)
+            F(.28,.22+i*.25,.65,.11,1)
+        end
+    end
+    P["layers"] = function()
+        for i=0,2 do
+            local l = F(.4,.1+i*.3,.4,.28,2)
+            l.Rotation = -20
+        end
+    end
+    P["wrench"] = function()
+        local s = F(.3,.3,.55,.12,0) s.Rotation = -45
+        O(.55,.05,.4,.4,1.5)
+    end
+    P["shield"] = function()
+        F(.2,.1,.6,.6,8)
+        local t = F(.3,.6,.4,.4,0) t.Rotation = 45
+    end
+    P["rocket"] = function()
+        F(.4,.15,.25,.5,8)
+        local t = F(.38,.05,.3,.3,0) t.Rotation = 45
+        F(.44,.65,.15,.3,8)
+    end
+    P["volume-2"] = function()
+        F(.1,.35,.15,.3,0)
+        local t = F(.15,.4,.25,.2,0) t.Rotation = 45
+        O(.45,.3,.25,.4,1.3)
+        O(.6,.2,.35,.6,1.3)
+    end
+    P["volume"] = P["volume-2"]
+    P["text-cursor-input"] = function()
+        O(.05,.25,.55,.5,2)
+        F(.75,.2,.12,.6,0)
+        F(.65,.2,.32,.1,0)
+        F(.65,.7,.32,.1,0)
+    end
+
+    local fn = P[name]
+    if fn then fn() else F(.35,.35,.3,.3,1) end
 end
 
 local function createIcon(parent, name, size, color)
@@ -65,14 +337,7 @@ local function createIcon(parent, name, size, color)
         img.ImageColor3 = color
         img.Parent = holder
     else
-        local txt = Instance.new("TextLabel")
-        txt.Size = UDim2.fromScale(1,1)
-        txt.BackgroundTransparency = 1
-        txt.Font = Enum.Font.GothamBold
-        txt.Text = ICON_MAP[name] or tostring(name):sub(1,1):upper()
-        txt.TextColor3 = color
-        txt.TextSize = math.max(10, math.floor(size*0.9))
-        txt.Parent = holder
+        drawIcon(holder, name, color)
     end
     return holder
 end
@@ -136,7 +401,7 @@ local function buildKeyUI(keySystem, keyFile, saveKey, onSuccess)
     logoIcon.Size = UDim2.fromScale(1,1)
     logoIcon.BackgroundTransparency = 1
     logoIcon.Font = Enum.Font.GothamBold
-    logoIcon.Text = "✦"
+    logoIcon.Text = "F"
     logoIcon.TextColor3 = Color3.fromRGB(255,150,200)
     logoIcon.TextSize = 24
     logoIcon.ZIndex = 12
@@ -251,9 +516,9 @@ local function buildKeyUI(keySystem, keyFile, saveKey, onSuccess)
         buttonLabel.Text = "验 证 中..."
         task.wait(0.6)
         if validKeys[entered] then
-            status.Text = "✓ 验证成功"
+            status.Text = "验证成功"
             status.TextColor3 = Color3.fromRGB(120,255,150)
-            buttonLabel.Text = "✓ 通 过"
+            buttonLabel.Text = "通 过"
             if saveKey and writefile then pcall(writefile,keyFile,entered) end
             task.wait(0.6)
             TweenService:Create(mask,TweenInfo.new(0.4),{BackgroundTransparency=1}):Play()
@@ -262,7 +527,7 @@ local function buildKeyUI(keySystem, keyFile, saveKey, onSuccess)
             keyGui:Destroy()
             if onSuccess then onSuccess() end
         else
-            status.Text = "✕ 卡密错误，请重试"
+            status.Text = "卡密错误，请重试"
             status.TextColor3 = Color3.fromRGB(255,120,120)
             buttonLabel.Text = "验 证"
             task.wait(1.2)
@@ -774,7 +1039,7 @@ function FantasyUI:CreateWindow(config)
     userVersion.Size = UDim2.new(1,-34,0,12)
     userVersion.BackgroundTransparency = 1
     userVersion.Font = Enum.Font.Gotham
-    userVersion.Text = "FantasyUI"..FantasyUI.Version
+    userVersion.Text = "FantasyUI "..FantasyUI.Version
     userVersion.TextColor3 = CONFIG.Color.SubText
     userVersion.TextSize = 8
     userVersion.TextXAlignment = Enum.TextXAlignment.Left
@@ -880,7 +1145,7 @@ function FantasyUI:CreateWindow(config)
     local function newLabel(parent, text, x, y, w, h, size, color, bold, align)
         local l = Instance.new("TextLabel",parent)
         l.Position = UDim2.new(0,x,0,y)
-        l.Size = UDim2.new(w and 1 or 1, w or -24, 0, h or 14)
+        l.Size = UDim2.new(1, w or -24, 0, h or 14)
         l.BackgroundTransparency = 1
         l.Font = bold and Enum.Font.GothamBold or Enum.Font.Gotham
         l.Text = text or ""
@@ -959,7 +1224,6 @@ function FantasyUI:CreateWindow(config)
 
         local style = (opts.Type == "Checkbox") and "Checkbox" or "Toggle"
         local state = opts.Value or false
-
         local apply
 
         if style == "Toggle" then
@@ -1009,7 +1273,7 @@ function FantasyUI:CreateWindow(config)
             tick.Size = UDim2.fromScale(1,1)
             tick.BackgroundTransparency = 1
             tick.Font = Enum.Font.GothamBold
-            tick.Text = "✓"
+            tick.Text = "v"
             tick.TextColor3 = Color3.fromRGB(255,255,255)
             tick.TextSize = 13
             tick.TextTransparency = state and 0 or 1
@@ -1925,14 +2189,13 @@ function FantasyUI:CreateWindow(config)
         iconShine.ZIndex = 10
         Instance.new("UICorner", iconShine).CornerRadius = UDim.new(1, 0)
 
-        local iconLbl = Instance.new("TextLabel", iconBg)
-        iconLbl.Size = UDim2.fromScale(1, 1)
-        iconLbl.BackgroundTransparency = 1
-        iconLbl.Font = Enum.Font.GothamBold
-        iconLbl.Text = ICON_MAP[tabIcon] or tostring(tabIcon):sub(1, 1):upper()
-        iconLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
-        iconLbl.TextSize = 11
-        iconLbl.ZIndex = 11
+        local miniIcon = Instance.new("Frame", iconBg)
+        miniIcon.AnchorPoint = Vector2.new(0.5, 0.5)
+        miniIcon.Position = UDim2.fromScale(0.5, 0.5)
+        miniIcon.Size = UDim2.fromScale(0.62, 0.62)
+        miniIcon.BackgroundTransparency = 1
+        miniIcon.ZIndex = 11
+        drawIcon(miniIcon, tabIcon, Color3.fromRGB(255,255,255))
 
         btn.MouseEnter:Connect(function()
             TweenService:Create(iconBg, TweenInfo.new(0.18, Enum.EasingStyle.Quart), { Size = UDim2.fromOffset(24, 24) }):Play()
@@ -1978,7 +2241,7 @@ function FantasyUI:CreateWindow(config)
         cp.PaddingLeft = UDim.new(0,2)
         cp.PaddingRight = UDim.new(0,2)
 
-        table.insert(tabs, { button = btn, label = label, content = content, icon = iconLbl, iconGlow = iconGlow })
+        table.insert(tabs, { button = btn, label = label, content = content, icon = miniIcon, iconGlow = iconGlow })
         btn.MouseButton1Click:Connect(function() switchTab(order) end)
         if #tabs == 1 then switchTab(1) end
 
