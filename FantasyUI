@@ -1,5 +1,3 @@
---这是一个开源免费的Roblox UI库
---BY IYOULIN
 local TweenService     = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local Players          = game:GetService("Players")
@@ -41,11 +39,8 @@ local function drawIcon(parent, name, color)
         f.BorderSizePixel = 0
         if r and r > 0 then
             local c = Instance.new("UICorner", f)
-            if r == 1 then
-                c.CornerRadius = UDim.new(1, 0)
-            else
-                c.CornerRadius = UDim.new(0, r)
-            end
+            if r == 1 then c.CornerRadius = UDim.new(1, 0)
+            else c.CornerRadius = UDim.new(0, r) end
         end
         return f
     end
@@ -1701,7 +1696,22 @@ function FantasyUI:CreateWindow(config)
                 end)
             end
         end
-        return card
+
+        local obj = {}
+        function obj:SetDesc(text)
+            text = text or ""
+            d.Text = text
+            local lines = 1
+            for _ in text:gmatch("\n") do lines = lines + 1 end
+            local dh = math.max(24, lines * 13)
+            d.Size = UDim2.new(1,-tx-12,0,dh)
+            local baseH = hasBtn and 40 or 26
+            card.Size = UDim2.new(1,0,0,baseH + dh)
+        end
+        function obj:SetTitle(text)
+            t.Text = text or ""
+        end
+        return card, obj
     end
 
     local function createCardKeybind(parent, order, opts, onFlag)
@@ -2378,7 +2388,8 @@ function FantasyUI:CreateWindow(config)
 
             function section:Paragraph(o)
                 o = o or {}
-                createCardParagraph(body, nextSecOrder(), o)
+                local card, obj = createCardParagraph(body, nextSecOrder(), o)
+                return obj
             end
 
             function section:Keybind(o)
