@@ -1,3 +1,6 @@
+--这是一个Roblox免费开源的UI库
+--BY IYOULIN
+
 local TweenService     = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local Players          = game:GetService("Players")
@@ -8,7 +11,7 @@ local playerGui = player:WaitForChild("PlayerGui")
 
 local FantasyUI = {}
 FantasyUI.__index = FantasyUI
-FantasyUI.Version = "2.1.1"
+FantasyUI.Version = "1.0"
 
 local DEFAULT_KEY_FILE = "fantasy_key.txt"
 
